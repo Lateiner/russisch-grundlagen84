@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Lückentext mit Wort-Bank</title>
+    <!-- Polyfill für Drag-and-Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --gap-bg: #e9ecef;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .explanation {
+            background: #eef7fd;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        /* Wort-Bank Styling */
+        .word-bank-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            text-align: center;
+        }
+
+        .word-bank {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .word-chip {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: grab;
+            user-select: none;
+            font-size: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+
+        .word-chip:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .word-chip.used {
+            opacity: 0.3;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* Übungsbereich */
+        .story-section {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .russian-text {
+            font-size: 1.2rem;
+            line-height: 2.2;
+            margin-bottom: 25px;
+        }
+
+        .gap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 130px;
+            height: 38px;
+            background-color: var(--gap-bg);
+            border: 2px dashed #adb5bd;
+            border-radius: 4px;
+            margin: 0 5px;
+            vertical-align: middle;
+            font-weight: bold;
+            padding: 0 10px;
+            transition: all 0.3s;
+        }
+
+        /* Direktes Feedback */
+        .gap.correct {
+            background-color: #d4edda;
+            border-color: var(--success-color);
+            border-style: solid;
+            color: #155724;
+        }
+
+        .gap.incorrect {
+            background-color: #f8d7da;
+            border-color: var(--error-color);
+            border-style: solid;
+            color: #721c24;
+        }
+
+        /* Übersetzung */
+        .translation-header {
+            font-weight: bold;
+            color: #6c757d;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            display: block;
+        }
+
+        .german-text {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-solution { background-color: #f39c12; color: white; }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .russian-text { font-size: 1.1rem; line-height: 2.5; }
+            .gap { min-width: 100px; height: 32px; }
+            button { width: 100%; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lückentext: Ein Schulausflug</h1>
+
+    <div class="explanation">
+        <p>Ziehen Sie die russischen Wörter in die korrekten Lücken. Achten Sie auf die Formen nach der Präposition <strong>ПО</strong>. Das System gibt Ihnen sofort Feedback.</p>
+    </div>
+
+    <span class="word-bank-header">Wort-Bank</span>
+    <div class="word-bank" id="wordBank">
+        <!-- Chips werden per JS generiert -->
+    </div>
+
+    <div class="story-section">
+        <div class="russian-text" id="russianText">
+            Вчера наш класс ездил на экскурсию. Учитель раздал всем студентам 
+            <span class="gap" data-answer="по одному"></span> 
+            <span class="gap" data-answer="учебнику"></span> 
+            и 
+            <span class="gap" data-answer="по две"></span> 
+            <span class="gap" data-answer="карты"></span> 
+            города. Для обеда мы купили 
+            <span class="gap" data-answer="по три"></span> 
+            <span class="gap" data-answer="яблока"></span> 
+            и 
+            <span class="gap" data-answer="по пять"></span> 
+            <span class="gap" data-answer="бутербродов"></span>. 
+            В конце дня каждый ученик заплатил 
+            <span class="gap" data-answer="по двадцать одному"></span> 
+            <span class="gap" data-answer="рублю"></span> 
+            за вход в музей.
+        </div>
+
+        <span class="translation-header">Übersetzung:</span>
+        <div class="german-text">
+            Gestern hat unsere Klasse einen Ausflug gemacht. Der Lehrer verteilte an alle Schüler je ein Lehrbuch und je zwei Stadtpläne. Für das Mittagessen kauften wir je drei Äpfel und je fünf belegte Brote. Am Ende des Tages zahlte jeder Schüler je einundzwanzig Rubel für den Eintritt ins Museum.
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetGame()">Neu starten</button>
+        <button class="btn-solution" onclick="showSolution()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const answerList = [
+        "по одному", "учебнику", "по две", "карты", 
+        "по три", "яблока", "по пять", "бутербродов", 
+        "по двадцать одному", "рублю"
+    ];
+
+    let draggedElement = null;
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function initBank() {
+        const bank = document.getElementById('wordBank');
+        bank.innerHTML = '';
+        shuffle([...answerList]).forEach(word => {
+            const chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.innerText = word;
+            chip.draggable = true;
+            chip.addEventListener('dragstart', (e) => {
+                draggedElement = e.target;
+            });
+            bank.appendChild(chip);
+        });
+    }
+
+    function initGaps() {
+        const gaps = document.querySelectorAll('.gap');
+        gaps.forEach(gap => {
+            gap.addEventListener('dragover', (e) => e.preventDefault());
+            gap.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (gap.classList.contains('correct')) return;
+
+                const droppedText = draggedElement.innerText;
+                const correctAnswer = gap.dataset.answer;
+
+                gap.innerText = droppedText;
+
+                if (droppedText === correctAnswer) {
+                    gap.className = 'gap correct';
+                    draggedElement.classList.add('used');
+                } else {
+                    gap.className = 'gap incorrect';
+                    // Bei falscher Antwort nach 1 Sekunde leeren, um neuen Versuch zu erlauben
+                    setTimeout(() => {
+                        if (gap.className === 'gap incorrect') {
+                            gap.innerText = '';
+                            gap.className = 'gap';
+                        }
+                    }, 1000);
+                }
+            });
+        });
+    }
+
+    function resetGame() {
+        const gaps = document.querySelectorAll('.gap');
+        gaps.forEach(gap => {
+            gap.innerText = '';
+            gap.className = 'gap';
+        });
+        initBank();
+    }
+
+    function showSolution() {
+        const gaps = document.querySelectorAll('.gap');
+        gaps.forEach(gap => {
+            gap.innerText = gap.dataset.answer;
+            gap.className = 'gap correct';
+        });
+        const chips = document.querySelectorAll('.word-chip');
+        chips.forEach(chip => chip.classList.add('used'));
+    }
+
+    // Initialisierung
+    window.onload = () => {
+        initBank();
+        initGaps();
+    };
+</script>
+
+</body>
+</html>
