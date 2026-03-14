@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vokabel-Lernkartei: Präposition ПО</title>
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --light-green: #e8f5e9;
+            --accent-green: #4caf50;
+            --text-dark: #1b5e20;
+            --card-shadow: rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-green);
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+
+        .progress {
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        /* Flashcard 3D Effekt */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 350px;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px var(--card-shadow);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            background: white;
+            border: 2px solid var(--accent-green);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: #fafafa;
+        }
+
+        .vokabel-text {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        /* Dynamische Schriftgrößen-Klassen */
+        .text-small { font-size: 1.4rem; }
+        .text-medium { font-size: 1.7rem; }
+
+        .note {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Bedienungselemente */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .utility-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: var(--accent-green);
+        }
+
+        button:active {
+            transform: translateY(2px);
+        }
+
+        .btn-utility {
+            background-color: #555;
+        }
+
+        .btn-utility:hover {
+            background-color: #777;
+        }
+
+        .shortcuts-info {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #777;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 500px) {
+            .flashcard-container { height: 280px; }
+            .vokabel-text { font-size: 1.5rem; }
+            button { padding: 10px 15px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h1>Lernkartei: ПО</h1>
+    
+    <div class="progress" id="progressIndicator">1 / 50</div>
+
+    <div class="flashcard-container" onclick="flipCard()">
+        <div class="flashcard" id="cardElement">
+            <div class="card-face card-front">
+                <p class="vokabel-text" id="frontText">по</p>
+                <div class="note">Russisch</div>
+            </div>
+            <div class="card-face card-back">
+                <p class="vokabel-text" id="backText">je, pro</p>
+                <div class="note">Deutsch</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="prevCard(event)">← Vorherige</button>
+        <button onclick="nextCard(event)">Nächste →</button>
+    </div>
+
+    <div class="utility-controls">
+        <button class="btn-utility" onclick="shuffleCards(event)">Mischen 🔀</button>
+        <button class="btn-utility" onclick="goToStart(event)">An den Anfang 🏠</button>
+    </div>
+
+    <div class="shortcuts-info">
+        Tastenkombinationen:<br>
+        [Leertaste / Enter]: Umdrehen | [← / →]: Navigation | [Pos1]: Anfang
+    </div>
+</div>
+
+<script>
+    // Vokabeldaten
+    const rawData = `
+1.	по — je, pro
+2.	дава́ть / дать — geben
+3.	покупа́ть / купи́ть — kaufen
+4.	получа́ть / получи́ть — bekommen, erhalten
+5.	зака́зывать / заказа́ть — bestellen
+6.	приноси́ть / принести́ — bringen, herbeitragen
+7.	раздава́ть / разда́ть — verteilen, austeilen
+8.	обме́нивать / обменя́ть — umtauschen, wechseln
+9.	плати́ть / заплати́ть — bezahlen
+10.	есть / съесть — essen
+11.	писа́ть / написа́ть — schreiben
+12.	конфе́та — Bonbon
+13.	пирожо́к — kleine Teigtasche, Pirogge
+14.	я́блоко — Apfel
+15.	биле́т — Ticket, Eintrittskarte, Fahrkarte
+16.	рубль — Rubel
+17.	гру́ша — Birne
+18.	е́вро — Euro
+19.	тетра́дь — Heft
+20.	кни́га — Buch
+21.	уче́бник — Lehrbuch
+22.	студе́нт — Student
+23.	ребёнок — Kind
+24.	пода́рок — Geschenk
+25.	до́ллар — Dollar
+26.	ро́за — Rose
+27.	ча́шка — Tasse
+28.	чай — Tee
+29.	апельси́н — Orange, Apfelsine
+30.	бана́н — Banane
+31.	килогра́мм — Kilogramm
+32.	грамм — Gramm
+33.	балл — Punkt (Bewertungseinheit)
+34.	вход — Eintritt, Eingang
+35.	музе́й — Museum
+36.	экску́рсия — Exkursion, Ausflug
+37.	учи́тель — Lehrer
+38.	ка́рта го́рода — Stadtplan
+39.	бутербро́д — belegtes Brot, Sandwich
+40.	предложе́ние — Satz
+41.	рису́нок — Zeichnung
+42.	по́рция — Portion
+43.	моро́женое — Eis, Speiseeis
+44.	чемода́н — Koffer
+45.	газе́та — Zeitung
+46.	стол — Tisch
+47.	окно́ — Fenster
+48.	день — Tag
+49.	год — Jahr
+50.	челове́к — Mensch, Person`;
+
+    let cards = [];
+    let currentIndex = 0;
+
+    // Daten parsen
+    function parseData() {
+        const lines = rawData.trim().split('\n');
+        cards = lines.map(line => {
+            // Entferne Nummerierung am Anfang
+            const cleanLine = line.replace(/^\d+\.\t?/, '');
+            const [front, back] = cleanLine.split(' — ');
+            return { front: front.trim(), back: back.trim() };
+        });
+    }
+
+    function updateUI() {
+        const card = cards[currentIndex];
+        const frontTextEl = document.getElementById('frontText');
+        const backTextEl = document.getElementById('backText');
+        
+        // Texte setzen
+        frontTextEl.innerText = card.front;
+        backTextEl.innerText = card.back;
+
+        // Dynamische Schriftgröße
+        adjustFontSize(frontTextEl, card.front);
+        adjustFontSize(backTextEl, card.back);
+
+        // Umdrehen zurücksetzen
+        document.getElementById('cardElement').classList.remove('flipped');
+        
+        // Fortschritt setzen
+        document.getElementById('progressIndicator').innerText = `${currentIndex + 1} / ${cards.length}`;
+    }
+
+    function adjustFontSize(element, text) {
+        element.classList.remove('text-small', 'text-medium');
+        if (text.length > 30) {
+            element.classList.add('text-small');
+        } else if (text.length > 15) {
+            element.classList.add('text-medium');
+        }
+    }
+
+    function flipCard() {
+        document.getElementById('cardElement').classList.toggle('flipped');
+    }
+
+    function nextCard(event) {
+        if(event) event.stopPropagation();
+        if (currentIndex < cards.length - 1) {
+            currentIndex++;
+            updateUI();
+        }
+        blurButtons();
+    }
+
+    function prevCard(event) {
+        if(event) event.stopPropagation();
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateUI();
+        }
+        blurButtons();
+    }
+
+    function shuffleCards(event) {
+        if(event) event.stopPropagation();
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+        currentIndex = 0;
+        updateUI();
+        blurButtons();
+    }
+
+    function goToStart(event) {
+        if(event) event.stopPropagation();
+        currentIndex = 0;
+        updateUI();
+        blurButtons();
+    }
+
+    // Hilfsfunktion: Button-Fokus nach Klick entfernen (verhindert Space-Doppelbelegung)
+    function blurButtons() {
+        document.activeElement.blur();
+    }
+
+    // Tastatursteuerung
+    document.addEventListener('keydown', (e) => {
+        switch(e.key) {
+            case ' ':
+            case 'Enter':
+                e.preventDefault();
+                flipCard();
+                break;
+            case 'ArrowRight':
+                nextCard();
+                break;
+            case 'ArrowLeft':
+                prevCard();
+                break;
+            case 'Home':
+                goToStart();
+                break;
+        }
+    });
+
+    // Start
+    parseData();
+    updateUI();
+
+</script>
+
+</body>
+</html>
