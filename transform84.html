@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Transformation (Direktes Feedback)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-bg: #d4edda;
+            --success-border: #27ae60;
+            --error-bg: #f8d7da;
+            --error-border: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .explanation {
+            background: #eef7fd;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+
+        .original-sentence {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #adb5bd;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .instruction-small {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: block;
+            padding: 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-label:hover {
+            border-color: var(--secondary-color);
+            background-color: #f1f8fe;
+        }
+
+        .option-label input {
+            display: none; /* Radio-Button verstecken für schöneres Design */
+        }
+
+        /* Feedback-Klassen */
+        .option-label.correct {
+            background-color: var(--success-bg) !important;
+            border-color: var(--success-border) !important;
+            color: #155724;
+        }
+
+        .option-label.incorrect {
+            background-color: var(--error-bg) !important;
+            border-color: var(--error-border) !important;
+            color: #721c24;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-solution { background-color: #f39c12; color: white; }
+        button:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            button { width: 100%; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Interaktive Transformation</h1>
+
+    <div class="explanation">
+        <p>Wandeln Sie die Information über den Besitz (Jeder hat X) in einen Satz über die Verteilung (Sie erhielten je X) um. </p>
+        <p><strong>Anleitung:</strong> Klicken Sie einfach auf die richtige Lösung. Das Feedback erfolgt sofort.</p>
+    </div>
+
+    <div id="exercise-list">
+        <!-- JS generiert Aufgaben -->
+    </div>
+</div>
+
+<script>
+    const exercises = [
+        {
+            original: "У каждого ученика есть 1 тетрадь. (Jeder Schüler hat 1 Heft).",
+            options: [
+                "Учитель раздал ученикам по одну тетрадь.",
+                "Учитель раздал ученикам по одной тетради.",
+                "Учитель раздал ученикам по одну тетради."
+            ],
+            correctIndex: 1
+        },
+        {
+            original: "У каждого гостя есть 2 стакана. (Jeder Gast hat 2 Gläser).",
+            options: [
+                "Официант принёс гостям по два стакана.",
+                "Официант принёс гостям по две стакана.",
+                "Официант принёс гостям по двум стаканам."
+            ],
+            correctIndex: 0
+        },
+        {
+            original: "У каждого ребёнка есть 5 конфет. (Jedes Kind hat 5 Bonbons).",
+            options: [
+                "Мама дала детям по пять конфеты.",
+                "Мама дала детям по пяти конфетам.",
+                "Мама дала детям по пять конфет."
+            ],
+            correctIndex: 2
+        },
+        {
+            original: "У каждого студенta есть 21 рубль. (Jeder Student hat 21 Rubel).",
+            options: [
+                "Студенты получили по двадцать одному рублю.",
+                "Студенты получили по двадцать один рубль.",
+                "Студенты получили по двадцать один рублю."
+            ],
+            correctIndex: 0
+        },
+        {
+            original: "У каждого друга есть 3 билета. (Jeder Freund hat 3 Tickets).",
+            options: [
+                "Друзья купили по три билетов.",
+                "Друзья купили по три билета.",
+                "Друзья купили по трём билетам."
+            ],
+            correctIndex: 1
+        },
+        {
+            original: "У каждого туриста есть 1 карта. (Jeder Tourist hat 1 Karte).",
+            options: [
+                "Туристы взяли по одну карту.",
+                "Туристы взяли по одной карте.",
+                "Туристы взяли по одной карту."
+            ],
+            correctIndex: 1
+        },
+        {
+            original: "У каждой группы есть 4 окна. (Jede Gruppe hat 4 Fenster).",
+            options: [
+                "В каждой группе по четыре окна.",
+                "В каждой группе по четыре окон.",
+                "В каждой группе по четырём окнам."
+            ],
+            correctIndex: 0
+        },
+        {
+            original: "У каждого человека есть 10 евро. (Jeder Mensch hat 10 Euro).",
+            options: [
+                "Все получили по десяти евро.",
+                "Все получили по десять евро.",
+                "Все получили по десять евра."
+            ],
+            correctIndex: 1
+        },
+        {
+            original: "У каждой девочки есть 2 розы. (Jedes Mädchen hat 2 Rosen).",
+            options: [
+                "Мальчики подарили по две розы.",
+                "Мальчики подарили по две роз.",
+                "Мальчики подарили по двум розам."
+            ],
+            correctIndex: 0
+        },
+        {
+            original: "У каждого рабочего есть 50 долларов. (Jeder Arbeiter hat 50 Dollar).",
+            options: [
+                "Рабочие заработали по пятьдесят долларов.",
+                "Рабочие заработали по пятидесяти долларам.",
+                "Рабочие заработали по пятьдесят доллара."
+            ],
+            correctIndex: 0
+        }
+    ];
+
+    function init() {
+        const list = document.getElementById('exercise-list');
+        exercises.forEach((ex, exIdx) => {
+            const card = document.createElement('div');
+            card.className = 'exercise-card';
+            card.id = `card-${exIdx}`;
+            
+            let optionsHtml = ex.options.map((opt, optIdx) => `
+                <label class="option-label" onclick="handleSelect(${exIdx}, ${optIdx})">
+                    <input type="radio" name="q${exIdx}" value="${optIdx}">
+                    ${opt}
+                </label>
+            `).join('');
+
+            card.innerHTML = `
+                <span class="instruction-small">Aufgabe ${exIdx + 1}</span>
+                <div class="original-sentence">${ex.original}</div>
+                <div class="options-list">
+                    ${optionsHtml}
+                </div>
+                <div class="controls">
+                    <button class="btn-reset" onclick="resetExercise(${exIdx})">Zurücksetzen</button>
+                    <button class="btn-solution" onclick="solveExercise(${exIdx})">Lösung anzeigen</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    window.handleSelect = function(exIdx, optIdx) {
+        const labels = document.querySelectorAll(`#card-${exIdx} .option-label`);
+        const correctIdx = exercises[exIdx].correctIndex;
+
+        // Alle Labels in dieser Karte zurücksetzen
+        labels.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+        // Feedback geben
+        if (optIdx === correctIdx) {
+            labels[optIdx].classList.add('correct');
+        } else {
+            labels[optIdx].classList.add('incorrect');
+            // Optional: Zeige die richtige Lösung trotzdem dezent an
+            // labels[correctIdx].classList.add('correct'); 
+        }
+    };
+
+    window.resetExercise = function(exIdx) {
+        const labels = document.querySelectorAll(`#card-${exIdx} .option-label`);
+        labels.forEach(l => l.classList.remove('correct', 'incorrect'));
+        const radios = document.querySelectorAll(`input[name="q${exIdx}"]`);
+        radios.forEach(r => r.checked = false);
+    };
+
+    window.solveExercise = function(exIdx) {
+        const labels = document.querySelectorAll(`#card-${exIdx} .option-label`);
+        const correctIdx = exercises[exIdx].correctIndex;
+        
+        resetExercise(exIdx);
+        labels[correctIdx].classList.add('correct');
+        const radios = document.querySelectorAll(`input[name="q${exIdx}"]`);
+        radios[correctIdx].checked = true;
+    };
+
+    init();
+</script>
+
+</body>
+</html>
