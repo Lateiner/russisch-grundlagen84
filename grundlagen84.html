@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktives Arbeitsblatt: Die Präposition ПО</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-bg: #d4edda;
+            --success-border: #28a745;
+            --error-bg: #f8d7da;
+            --error-border: #dc3545;
+            --bg-body: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; color: var(--primary-color); border-bottom: 3px solid var(--secondary-color); padding-bottom: 10px; }
+        
+        .explanation {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-card {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-text { font-size: 1.1rem; margin-bottom: 15px; display: block; }
+
+        select, .drop-zone {
+            font-size: 1rem;
+            padding: 5px 10px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .drop-zone {
+            display: inline-block;
+            min-width: 120px;
+            min-height: 30px;
+            vertical-align: middle;
+            text-align: center;
+            background: #f1f3f5;
+        }
+
+        .drag-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f1f3f5;
+            border-radius: 8px;
+        }
+
+        .draggable {
+            background: var(--secondary-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .correct { background-color: var(--success-bg) !important; border-color: var(--success-border) !important; color: #155724; }
+        .incorrect { background-color: var(--error-bg) !important; border-color: var(--error-border) !important; color: #721c24; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-reset { background: #6c757d; color: white; }
+        .btn-solution { background: #f39c12; color: white; }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .draggable { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: Präposition ПО</h1>
+
+    <div class="explanation">
+        <h3>Kurzanleitung</h3>
+        <p>Die Präposition <strong>ПО</strong> gibt an, dass jeder „je“ eine bestimmte Menge erhält:</p>
+        <ul>
+            <li><strong>Zahl 1:</strong> Dativ + Dativ (по одному билету)</li>
+            <li><strong>Zahl 2, 3, 4:</strong> Akkusativ (Zahl) + Genitiv Singular (по два билета)</li>
+            <li><strong>Zahl 5–20:</strong> Akkusativ (Zahl) + Genitiv Plural (по пять билетов)</li>
+        </ul>
+        <p><em>Hinweis: Alle Aufgaben geben sofort Feedback. Grün = Richtig, Rot = Falsch.</em></p>
+    </div>
+
+    <!-- Übungen 1-10: Zahlwörter auswählen -->
+    <h3>Teil 1: Wählen Sie das richtige Zahlwort</h3>
+    <div id="part1">
+        <!-- JS generiert diese Aufgaben -->
+    </div>
+
+    <!-- Übungen 11-15: Substantivendungen -->
+    <h3>Teil 2: Wählen Sie die richtige Substantiv-Endung</h3>
+    <div id="part2">
+        <!-- JS generiert diese Aufgaben -->
+    </div>
+
+    <!-- Übungen 16-20: Drag & Drop Sätze -->
+    <h3>Teil 3: Drag & Drop (Zahlwörter einfügen)</h3>
+    <div class="drag-pool" id="dragPool">
+        <div class="draggable" draggable="true" id="d1">двадцать одному</div>
+        <div class="draggable" draggable="true" id="d2">четыре</div>
+        <div class="draggable" draggable="true" id="d3">две</div>
+        <div class="draggable" draggable="true" id="d4">одной</div>
+        <div class="draggable" draggable="true" id="d5">восемь</div>
+    </div>
+    <div id="part3">
+        <!-- JS generiert diese Aufgaben -->
+    </div>
+
+</div>
+
+<script>
+    const dataPart1 = [
+        { q: "1. Мама дала детям по ... конфете. (1)", options: ["одну", "одной"], correct: "одной" },
+        { q: "2. Мы купили по ... билета. (2)", options: ["два", "двум"], correct: "два" },
+        { q: "3. В классе выдали по ... учебнику. (1)", options: ["одному", "один"], correct: "одному" },
+        { q: "4. Друзья заказали по ... пиццы. (3)", options: ["три", "трём"], correct: "три" },
+        { q: "5. Каждому досталось по ... яблок. (5)", options: ["пяти", "пять"], correct: "пять" },
+        { q: "6. Дайте нам по ... порции мороженого. (2)", options: ["две", "двум"], correct: "дve" },
+        { q: "7. Ученики написали по ... предложению. (1)", options: ["одному", "одно"], correct: "одному" },
+        { q: "8. Туристы взяли по ... чемодана. (4)", options: ["четыре", "четырём"], correct: "четыре" },
+        { q: "9. Мы получили по ... письму. (1)", options: ["одному", "одним"], correct: "одному" },
+        { q: "10. В вагоне по ... человек. (20)", options: ["двадцать", "двадцати"], correct: "двадцать" }
+    ];
+
+    const dataPart2 = [
+        { q: "11. По пять ...", options: ["рубля", "рублей"], correct: "рублей" },
+        { q: "12. По одной ...", options: ["газете", "газету"], correct: "газете" },
+        { q: "13. По три ...", options: ["банана", "бананов"], correct: "банана" },
+        { q: "14. По одному ...", options: ["слово", "слову"], correct: "слову" },
+        { q: "15. По две ...", options: ["ложки", "ложек"], correct: "ложки" }
+    ];
+
+    const dataPart3 = [
+        { q: "16. Каждой девочке подарили по ... розе.", correct: "одной" },
+        { q: "17. Мы купили по ... килограмма сахара.", correct: "четыре" },
+        { q: "18. Бабушка дала внукам по ... рублю.", correct: "двадцать одному" },
+        { q: "19. Студенты получили по ... баллов.", correct: "восемь" },
+        { q: "20. Официант принёс по ... чашки чая.", correct: "две" }
+    ];
+
+    function init() {
+        const p1 = document.getElementById('part1');
+        dataPart1.forEach((item, i) => {
+            p1.innerHTML += createSelectExercise(item, i);
+        });
+
+        const p2 = document.getElementById('part2');
+        dataPart2.forEach((item, i) => {
+            p2.innerHTML += createSelectExercise(item, i + 10);
+        });
+
+        const p3 = document.getElementById('part3');
+        dataPart3.forEach((item, i) => {
+            p3.innerHTML += `
+                <div class="exercise-card" id="ex${i+15}">
+                    <span class="exercise-text">${item.q}</span>
+                    <div class="drop-zone" data-correct="${item.correct}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                    <div class="btn-group">
+                        <button class="btn-reset" onclick="resetDrop(${i+15})">Zurücksetzen</button>
+                        <button class="btn-solution" onclick="showDropSolution(${i+15})">Lösung</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function createSelectExercise(item, i) {
+        let optionsHtml = `<option value="">-- ? --</option>`;
+        item.options.forEach(opt => {
+            optionsHtml += `<option value="${opt}">${opt}</option>`;
+        });
+        return `
+            <div class="exercise-card" id="ex${i}">
+                <span class="exercise-text">${item.q}</span>
+                <select onchange="checkSelect(this, '${item.correct}')">
+                    ${optionsHtml}
+                </select>
+                <div class="btn-group">
+                    <button class="btn-reset" onclick="resetSelect(${i})">Zurücksetzen</button>
+                    <button class="btn-solution" onclick="showSelectSolution(${i}, '${item.correct}')">Lösung</button>
+                </div>
+            </div>`;
+    }
+
+    // --- LOGIK ---
+
+    window.checkSelect = function(el, correct) {
+        if (el.value === "") {
+            el.className = "";
+        } else if (el.value === correct) {
+            el.className = "correct";
+        } else {
+            el.className = "incorrect";
+        }
+    };
+
+    window.resetSelect = function(id) {
+        const sel = document.querySelector(`#ex${id} select`);
+        sel.value = "";
+        sel.className = "";
+    };
+
+    window.showSelectSolution = function(id, correct) {
+        const sel = document.querySelector(`#ex${id} select`);
+        sel.value = correct;
+        sel.className = "correct";
+    };
+
+    // Drag & Drop
+    let draggedData = "";
+
+    document.querySelectorAll('.draggable').forEach(d => {
+        d.addEventListener('dragstart', e => {
+            draggedData = e.target.innerText;
+        });
+    });
+
+    window.allowDrop = function(e) { e.preventDefault(); };
+
+    window.drop = function(e) {
+        e.preventDefault();
+        const zone = e.target;
+        zone.innerText = draggedData;
+        if (draggedData === zone.getAttribute('data-correct')) {
+            zone.className = "drop-zone correct";
+        } else {
+            zone.className = "drop-zone incorrect";
+        }
+    };
+
+    window.resetDrop = function(id) {
+        const zone = document.querySelector(`#ex${id} .drop-zone`);
+        zone.innerText = "";
+        zone.className = "drop-zone";
+    };
+
+    window.showDropSolution = function(id) {
+        const zone = document.querySelector(`#ex${id} .drop-zone`);
+        const sol = zone.getAttribute('data-correct');
+        zone.innerText = sol;
+        zone.className = "drop-zone correct";
+    };
+
+    init();
+</script>
+
+</body>
+</html>
