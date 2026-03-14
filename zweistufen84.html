@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Zwei-Stufen-Logik (ПО)</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --step-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .explanation {
+            background: #eef7fd;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-item {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .sentence {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .logic-steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: var(--step-bg);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .step-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #6c757d;
+            font-weight: bold;
+        }
+
+        select {
+            padding: 10px;
+            border: 2px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            cursor: pointer;
+            background: white;
+        }
+
+        /* Feedback Farben */
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        select.incorrect {
+            border-color: var(--error-color);
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-solution { background-color: #f39c12; color: white; }
+        button:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .logic-steps { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+            button { width: 100%; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Zwei-Stufen-Logik: ПО + Zahlwörter</h1>
+
+    <div class="explanation">
+        <p>Das Russische verwendet bei der Präposition <strong>ПО</strong> eine Logik-Kette. Entscheiden Sie pro Satz in zwei Schritten:</p>
+        <ol>
+            <li><strong>Schritt 1:</strong> Welchen Fall braucht das Zahlwort? (Dativ bei 1, Akkusativ bei allen anderen).</li>
+            <li><strong>Schritt 2:</strong> Welche Form braucht das Substantiv? (Abhängig von der Zahl: Dativ, Genitiv Singular oder Genitiv Plural).</li>
+        </ol>
+        <p><em>Direktes Feedback: Grün = Richtig, Rot = Falsch. Keine Tastatur nötig!</em></p>
+    </div>
+
+    <div id="exercise-container">
+        <!-- JS generiert die Aufgaben hier -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetAll()">Alle zurücksetzen</button>
+        <button class="btn-solution" onclick="showAllSolutions()">Alle Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const exerciseData = [
+        {
+            sentence: "1. Мама дала детям по (1) ... ...",
+            numeralOptions: ["одной", "одну"],
+            numeralCorrect: "одной",
+            nounOptions: ["конфеты", "конфете", "конфет"],
+            nounCorrect: "конфете"
+        },
+        {
+            sentence: "2. Мы купили по (2) ... ...",
+            numeralOptions: ["два", "двум"],
+            numeralCorrect: "два",
+            nounOptions: ["билета", "билету", "билетов"],
+            nounCorrect: "билета"
+        },
+        {
+            sentence: "3. Они получили по (5) ... ...",
+            numeralOptions: ["пяти", "пять"],
+            numeralCorrect: "пять",
+            nounOptions: ["яблока", "яблоку", "яблок"],
+            nounCorrect: "яблок"
+        },
+        {
+            sentence: "4. Учитель раздал по (1) ... ...",
+            numeralOptions: ["одному", "один"],
+            numeralCorrect: "одному",
+            nounOptions: ["учебнику", "учебника", "учебников"],
+            nounCorrect: "учебнику"
+        },
+        {
+            sentence: "5. В кафе заказали по (3) ... ...",
+            numeralOptions: ["три", "трём"],
+            numeralCorrect: "три",
+            nounOptions: ["пиццы", "пицце", "пицц"],
+            nounCorrect: "пиццы"
+        },
+        {
+            sentence: "6. Дайте нам по (4) ... ...",
+            numeralOptions: ["четыре", "четырём"],
+            numeralCorrect: "четыre",
+            numeralCorrect: "четыре",
+            nounOptions: ["стакана", "стакану", "стаканов"],
+            nounCorrect: "стакана"
+        },
+        {
+            sentence: "7. Каждый получил по (10) ... ...",
+            numeralOptions: ["десяти", "десять"],
+            numeralCorrect: "десять",
+            nounOptions: ["рубля", "рублю", "рублей"],
+            nounCorrect: "рублей"
+        },
+        {
+            sentence: "8. Мы съели по (1) ... ...",
+            numeralOptions: ["одному", "одно"],
+            numeralCorrect: "одному",
+            nounOptions: ["банану", "банана", "бананов"],
+            nounCorrect: "банану"
+        },
+        {
+            sentence: "9. Ученики взяли по (2) ... ...",
+            numeralOptions: ["две", "двум"],
+            numeralCorrect: "две",
+            nounOptions: ["тетради", "тетрадям", "тетрадь"],
+            nounCorrect: "тетради"
+        },
+        {
+            sentence: "10. В группе было по (20) ... ...",
+            numeralOptions: ["двадцати", "двадцать"],
+            numeralCorrect: "двадцать",
+            nounOptions: ["студента", "студенту", "студентов"],
+            nounCorrect: "студентов"
+        },
+        {
+            sentence: "11. Бабушка дала по (1) ... ...",
+            numeralOptions: ["одному", "одной"],
+            numeralCorrect: "одной",
+            nounOptions: ["розе", "розу", "роз"],
+            nounCorrect: "розе"
+        },
+        {
+            sentence: "12. Мы обменяли по (50) ... ...",
+            numeralOptions: ["пятьдесят", "пятидесяти"],
+            numeralCorrect: "пятьдесят",
+            nounOptions: ["доллара", "доллару", "долларов"],
+            nounCorrect: "долларов"
+        },
+        {
+            sentence: "13. Друзья купили по (4) ... ...",
+            numeralOptions: ["четыре", "четырём"],
+            numeralCorrect: "четыре",
+            nounOptions: ["билета", "билету", "билетов"],
+            nounCorrect: "билета"
+        },
+        {
+            sentence: "14. Каждому выдали по (1) ... ...",
+            numeralOptions: ["одному", "одно"],
+            numeralCorrect: "одному",
+            nounOptions: ["месту", "места", "мест"],
+            nounCorrect: "месту"
+        },
+        {
+            sentence: "15. Выпили по (2) ... ...",
+            numeralOptions: ["две", "двум"],
+            numeralCorrect: "две",
+            nounOptions: ["чашки", "чашкам", "чашек"],
+            nounCorrect: "чашки"
+        }
+    ];
+
+    function initExercises() {
+        const container = document.getElementById('exercise-container');
+        container.innerHTML = '';
+        
+        exerciseData.forEach((data, index) => {
+            const item = document.createElement('div');
+            item.className = 'exercise-item';
+            
+            const numeralsHtml = data.numeralOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            const nounHtml = data.nounOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+
+            item.innerHTML = `
+                <div class="sentence">${data.sentence}</div>
+                <div class="logic-steps">
+                    <div class="step">
+                        <span class="step-label">Schritt 1: Zahlwort</span>
+                        <select onchange="validate(this, '${data.numeralCorrect}')">
+                            <option value="">-- wählen --</option>
+                            ${numeralsHtml}
+                        </select>
+                    </div>
+                    <div class="step">
+                        <span class="step-label">Schritt 2: Substantiv</span>
+                        <select onchange="validate(this, '${data.nounCorrect}')">
+                            <option value="">-- wählen --</option>
+                            ${nounHtml}
+                        </select>
+                    </div>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function validate(select, correctValue) {
+        if (select.value === "") {
+            select.className = "";
+        } else if (select.value === correctValue) {
+            select.className = "correct";
+        } else {
+            select.className = "incorrect";
+        }
+    }
+
+    function resetAll() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(s => {
+            s.value = "";
+            s.className = "";
+        });
+    }
+
+    function showAllSolutions() {
+        const items = document.querySelectorAll('.exercise-item');
+        items.forEach((item, index) => {
+            const selects = item.querySelectorAll('select');
+            selects[0].value = exerciseData[index].numeralCorrect;
+            selects[0].className = "correct";
+            selects[1].value = exerciseData[index].nounCorrect;
+            selects[1].className = "correct";
+        });
+    }
+
+    window.onload = initExercises;
+</script>
+
+</body>
+</html>
