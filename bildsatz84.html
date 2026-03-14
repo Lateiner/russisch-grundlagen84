@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Bild-Satz-Zuordnung (10 Paare)</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --selected-bg: #e3f2fd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .explanation {
+            background: #eef7fd;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-card {
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+            font-size: 1rem;
+        }
+
+        .match-card:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .match-card.selected {
+            background-color: var(--selected-bg);
+            border-color: var(--secondary-color);
+        }
+
+        .match-card.correct {
+            background-color: #d4edda !important;
+            border-color: var(--success-color) !important;
+            cursor: default;
+        }
+
+        .match-card.error-shake {
+            animation: shake 0.4s;
+            background-color: #f8d7da;
+            border-color: var(--error-color);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .visual { font-size: 2rem; }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-solution { background-color: #f39c12; color: white; }
+        button:hover { opacity: 0.8; }
+
+        /* Lösungsfarben (keine Kursivschrift) */
+        .sol-0 { background-color: #ffeb3b !important; color: #000; }
+        .sol-1 { background-color: #ff9800 !important; color: #fff; }
+        .sol-2 { background-color: #e91e63 !important; color: #fff; }
+        .sol-3 { background-color: #9c27b0 !important; color: #fff; }
+        .sol-4 { background-color: #3f51b5 !important; color: #fff; }
+        .sol-5 { background-color: #03a9f4 !important; color: #fff; }
+        .sol-6 { background-color: #009688 !important; color: #fff; }
+        .sol-7 { background-color: #8bc34a !important; color: #000; }
+        .sol-8 { background-color: #795548 !important; color: #fff; }
+        .sol-9 { background-color: #607d8b !important; color: #fff; }
+
+        @media (max-width: 600px) {
+            .game-grid { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+            button { width: 100%; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bild-Satz-Zuordnung: ПО + Zahlwörter</h1>
+
+    <div class="explanation">
+        <p>Verbinde die Bilder mit den passenden Sätzen. Klicke zuerst ein Element der einen Seite und dann das passende Element der anderen Seite an.</p>
+        <p><strong>Feedback:</strong> Korrekte Paare werden sofort grün markiert. Falsche Versuche blinken kurz rot.</p>
+    </div>
+
+    <div class="game-grid">
+        <div class="column" id="left-col"></div>
+        <div class="column" id="right-col"></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetGame()">Neu starten</button>
+        <button class="btn-solution" onclick="showSolution()">Lösungen mit Farben anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const pairsData = [
+        { id: 0, visual: "🍎", text: "Мама дала детям по одному яблоку." },
+        { id: 1, visual: "🎟️", text: "Турист купил по одному билеtu." },
+        { id: 2, visual: "🍌🍌", text: "Мы съели по два банана." },
+        { id: 3, visual: "🍐🍐🍐", text: "Бабушка дала нам по три груши." },
+        { id: 4, visual: "🍕🍕🍕🍕", text: "Друзья заказали по четыре пиццы." },
+        { id: 5, visual: "🍊🍊🍊🍊🍊", text: "В магазине купили по пять апельсинов." },
+        { id: 6, visual: "💰💰💰💰💰💰", text: "Дети получили по шесть рублей." },
+        { id: 7, visual: "📓📓📓📓<br>📓📓📓📓", text: "Ученики купили по восемь тетрадей." },
+        { id: 8, visual: "💵💵💵💵💵<br>💵💵💵💵💵", text: "Каждый обменял по десять долларов." },
+        { id: 9, visual: "🖊️", text: "Учитель раздал по одной ручке." }
+    ];
+
+    let selectedNode = null;
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function createCards() {
+        const leftCol = document.getElementById('left-col');
+        const rightCol = document.getElementById('right-col');
+        leftCol.innerHTML = '';
+        rightCol.innerHTML = '';
+
+        const leftItems = shuffle([...pairsData]);
+        const rightItems = shuffle([...pairsData]);
+
+        leftItems.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+            card.dataset.id = item.id;
+            card.dataset.type = 'visual';
+            card.innerHTML = `<span class="visual">${item.visual}</span>`;
+            card.onclick = () => handleCardClick(card);
+            leftCol.appendChild(card);
+        });
+
+        rightItems.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+            card.dataset.id = item.id;
+            card.dataset.type = 'text';
+            card.innerText = item.text;
+            card.onclick = () => handleCardClick(card);
+            rightCol.appendChild(card);
+        });
+    }
+
+    function handleCardClick(card) {
+        if (card.classList.contains('correct')) return;
+
+        if (selectedNode === null) {
+            selectedNode = card;
+            card.classList.add('selected');
+        } else {
+            if (selectedNode === card) {
+                card.classList.remove('selected');
+                selectedNode = null;
+                return;
+            }
+
+            // Check if different types (one visual, one text)
+            if (selectedNode.dataset.type !== card.dataset.type) {
+                if (selectedNode.dataset.id === card.dataset.id) {
+                    // CORRECT
+                    selectedNode.classList.remove('selected');
+                    selectedNode.classList.add('correct');
+                    card.classList.add('correct');
+                    selectedNode = null;
+                } else {
+                    // WRONG
+                    const first = selectedNode;
+                    const second = card;
+                    first.classList.remove('selected');
+                    first.classList.add('error-shake');
+                    second.classList.add('error-shake');
+                    
+                    setTimeout(() => {
+                        first.classList.remove('error-shake');
+                        second.classList.remove('error-shake');
+                    }, 400);
+                    selectedNode = null;
+                }
+            } else {
+                // Change selection to the new card of the same side
+                selectedNode.classList.remove('selected');
+                selectedNode = card;
+                card.classList.add('selected');
+            }
+        }
+    }
+
+    function resetGame() {
+        selectedNode = null;
+        createCards();
+    }
+
+    function showSolution() {
+        selectedNode = null;
+        const allCards = document.querySelectorAll('.match-card');
+        allCards.forEach(card => {
+            card.classList.remove('selected', 'correct', 'error-shake');
+            // Remove previous solution classes
+            for(let i=0; i<10; i++) card.classList.remove(`sol-${i}`);
+            
+            const id = card.dataset.id;
+            card.classList.add(`sol-${id}`);
+        });
+    }
+
+    window.onload = createCards;
+</script>
+
+</body>
+</html>
