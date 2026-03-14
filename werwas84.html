@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Tabellen-Logik (10 Personen)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-bg: #d4edda;
+            --success-border: #27ae60;
+            --error-bg: #f8d7da;
+            --error-border: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .explanation {
+            background: #eef7fd;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        /* Tabelle Styling */
+        .table-wrapper {
+            overflow-x: auto; /* Responsiv für kleine Bildschirme */
+            margin-bottom: 30px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            min-width: 500px;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .data-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        /* Übungsbereich */
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .exercise-row {
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .person-name {
+            font-weight: bold;
+            min-width: 100px;
+            color: var(--primary-color);
+        }
+
+        select {
+            padding: 8px;
+            border: 2px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: white;
+        }
+
+        /* Feedback-Klassen */
+        select.correct {
+            background-color: var(--success-bg) !important;
+            border-color: var(--success-border) !important;
+            color: #155724;
+        }
+
+        select.incorrect {
+            background-color: var(--error-bg) !important;
+            border-color: var(--error-border) !important;
+            color: #721c24;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-solution { background-color: #f39c12; color: white; }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .exercise-row { flex-direction: column; align-items: flex-start; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Wer bekommt was? (Tabellen-Logik)</h1>
+
+    <div class="explanation">
+        <p>Analysieren Sie die Verteilungstabelle und vervollständigen Sie die Sätze mit der korrekten Form (Präposition <strong>ПО</strong> + Zahlwort + Substantiv).</p>
+        <p><strong>Regel-Erinnerung:</strong> Bei Zahl 1 verwenden wir den Dativ, bei allen anderen Zahlen steht das Zahlwort im Akkusativ und bestimmt die Form des Substantivs.</p>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Person</th>
+                    <th>Anzahl</th>
+                    <th>Gegenstand</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Иван</td><td>1</td><td>яблоко (Apfel)</td></tr>
+                <tr><td>Мария</td><td>2</td><td>груша (Birne)</td></tr>
+                <tr><td>Борис</td><td>5</td><td>конфета (Bonbon)</td></tr>
+                <tr><td>Анна</td><td>4</td><td>книга (Buch)</td></tr>
+                <tr><td>Виктор</td><td>21</td><td>рубль (Rubel)</td></tr>
+                <tr><td>Елена</td><td>3</td><td>банан (Banane)</td></tr>
+                <tr><td>Олег</td><td>10</td><td>евро (Euro)</td></tr>
+                <tr><td>Татьяна</td><td>32</td><td>тетрадь (Heft)</td></tr>
+                <tr><td>Дмитрий</td><td>1</td><td>подарок (Geschenk)</td></tr>
+                <tr><td>София</td><td>6</td><td>стакан (Glas)</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="exercise-grid">
+        <!-- 1 -->
+        <div class="exercise-row">
+            <span class="person-name">Ивану</span> дали 
+            <select data-correct="по одному яблоку" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по одно яблоко">по одно яблоко</option>
+                <option value="по одному яблоку">по одному яблоку</option>
+                <option value="по одному яблока">по одному яблока</option>
+            </select>.
+        </div>
+        <!-- 2 -->
+        <div class="exercise-row">
+            <span class="person-name">Марии</span> дали 
+            <select data-correct="по две груши" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по две груши">по две груши</option>
+                <option value="по две груш">по две груш</option>
+                <option value="по двум грушам">по двум грушам</option>
+            </select>.
+        </div>
+        <!-- 3 -->
+        <div class="exercise-row">
+            <span class="person-name">Борису</span> дали 
+            <select data-correct="по пять конфет" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по пять конфеты">по пять конфеты</option>
+                <option value="по пять конфет">по fünf конфет</option>
+                <option value="по пять конфет">по пять конфет</option>
+            </select>.
+        </div>
+        <!-- 4 -->
+        <div class="exercise-row">
+            <span class="person-name">Анне</span> дали 
+            <select data-correct="по четыре книги" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по четыре книги">по четыре книги</option>
+                <option value="по четыре книг">по четыре книг</option>
+                <option value="по четырём книгам">по четырём книгам</option>
+            </select>.
+        </div>
+        <!-- 5 -->
+        <div class="exercise-row">
+            <span class="person-name">Виктору</span> дали 
+            <select data-correct="по двадцать одному рублю" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по двадцать один рубль">по двадцать один рубль</option>
+                <option value="по двадцать одному рублю">по двадцать одному рублю</option>
+                <option value="по двадцать одному рубля">по двадцать одному рубля</option>
+            </select>.
+        </div>
+        <!-- 6 -->
+        <div class="exercise-row">
+            <span class="person-name">Елене</span> дали 
+            <select data-correct="по три банана" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по три банана">по три банана</option>
+                <option value="по три бананов">по три бананов</option>
+                <option value="по трём бананам">по трём бананам</option>
+            </select>.
+        </div>
+        <!-- 7 -->
+        <div class="exercise-row">
+            <span class="person-name">Олегу</span> дали 
+            <select data-correct="по десять евро" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по десять евро">по десять евро</option>
+                <option value="по десяти евро">по десяти евро</option>
+                <option value="по десять евра">по десять евра</option>
+            </select>.
+        </div>
+        <!-- 8 -->
+        <div class="exercise-row">
+            <span class="person-name">Татьяне</span> дали 
+            <select data-correct="по тридцать две тетради" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по тридцать две тетради">по тридцать две тетради</option>
+                <option value="по тридцать две тетрадей">по тридцать две тетрадей</option>
+                <option value="по тридцати двум тетрадям">по тридцати двум тетрадям</option>
+            </select>.
+        </div>
+        <!-- 9 -->
+        <div class="exercise-row">
+            <span class="person-name">Дмитрию</span> дали 
+            <select data-correct="по одному подарку" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по один подарок">по один подарок</option>
+                <option value="по одному подарку">по одному подарку</option>
+                <option value="по одному подарка">по одному подарка</option>
+            </select>.
+        </div>
+        <!-- 10 -->
+        <div class="exercise-row">
+            <span class="person-name">Софии</span> дали 
+            <select data-correct="по шесть стаканов" onchange="validate(this)">
+                <option value="">-- wählen --</option>
+                <option value="по шесть стаканов">по шесть стаканов</option>
+                <option value="по шесть стакана">по sechs стакана</option>
+                <option value="по шесть стакана">по шесть стакана</option>
+            </select>.
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetAll()">Neu starten</button>
+        <button class="btn-solution" onclick="showAll()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    function validate(select) {
+        const correct = select.getAttribute('data-correct');
+        if (select.value === "") {
+            select.className = "";
+        } else if (select.value === correct) {
+            select.className = "correct";
+        } else {
+            select.className = "incorrect";
+        }
+    }
+
+    function resetAll() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(s => {
+            s.value = "";
+            s.className = "";
+        });
+    }
+
+    function showAll() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(s => {
+            s.value = s.getAttribute('data-correct');
+            s.className = "correct";
+        });
+    }
+</script>
+
+</body>
+</html>
