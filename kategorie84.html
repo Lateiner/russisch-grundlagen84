@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russische Grammatik: ПО + Zahlwörter (Kategorisierung)</title>
+    <!-- Polyfill für Touch-Geräte, damit Drag & Drop funktioniert -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            /* Farbpalette */
+            --primary-text-color: #2c3e50; /* Dunkelblau für Text */
+            --secondary-highlight-color: #3498db; /* Helles Blau für Akzente */
+            --success-color: #28a745; /* Grün für richtig */
+            --error-color: #dc3545; /* Rot für falsch */
+            --bg-page-color: #f8f9fa; /* Heller Hintergrund für die Seite */
+            --card-bg-color: #ffffff; /* Weißer Hintergrund für Karten */
+            --basket-dativ-border: #8e44ad; /* Lila für Dativ-Korb */
+            --basket-dativ-bg: #f4eef8; /* Hell-Lila für Dativ-Korb */
+            --basket-akk-gen-border: #d35400; /* Orange für Akkusativ/Genitiv-Korb */
+            --basket-akk-gen-bg: #fdf2e9; /* Hell-Orange für Akkusativ/Genitiv-Korb */
+            --draggable-bg-color: #4a69bd; /* Blauer Hintergrund für ziehbare Elemente */
+            --pool-bg-color: #e9ecef; /* Grauer Hintergrund für den Item-Pool */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-page-color);
+            color: var(--primary-text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center; /* Zentriert den Inhalt */
+            align-items: flex-start; /* Oben beginnen */
+            min-height: 100vh; /* Mindesthöhe des Bodys für vertikale Zentrierung */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px; /* Maximale Breite des Hauptinhalts */
+            background: var(--card-bg-color);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-text-color);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            border-bottom: 3px solid var(--secondary-highlight-color);
+            padding-bottom: 10px;
+        }
+
+        .explanation {
+            background: #eef2f7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--secondary-highlight-color);
+        }
+
+        .exercise-section {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            background: #fdfdfd;
+        }
+
+        .item-pool {
+            display: flex;
+            flex-wrap: wrap; /* Elemente können in die nächste Zeile umbrechen */
+            gap: 12px; /* Abstand zwischen den Elementen */
+            margin-bottom: 30px;
+            padding: 15px;
+            background: var(--pool-bg-color);
+            border: 1px solid #cceeff;
+            border-radius: 8px;
+            min-height: 60px; /* Mindesthöhe für leeren Pool */
+            justify-content: center; /* Elemente zentrieren im Pool */
+        }
+
+        .draggable {
+            background: var(--draggable-bg-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px; /* Pillenform */
+            cursor: grab;
+            font-size: 1rem;
+            user-select: none; /* Text nicht auswählbar machen */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.2s ease-in-out; /* Übergang für Farben/Schatten */
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transform: scale(1.02);
+        }
+
+        .basket-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Zwei Spalten gleicher Breite */
+            gap: 25px; /* Abstand zwischen den Körben */
+            margin-top: 20px;
+        }
+
+        .basket {
+            min-height: 200px; /* Mindesthöhe für Körbe */
+            padding: 20px;
+            border: 3px dashed; /* Gestreifter Rand */
+            border-radius: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            display: flex;
+            flex-direction: column; /* Elemente vertikal anordnen */
+            align-items: center; /* Elemente horizontal zentrieren */
+            gap: 10px; /* Abstand zwischen gezogenen Elementen */
+            transition: all 0.3s ease;
+        }
+
+        .basket.dativ {
+            border-color: var(--basket-dativ-border);
+            background: var(--basket-dativ-bg);
+            color: var(--basket-dativ-border);
+        }
+
+        .basket.akk-gen {
+            border-color: var(--basket-akk-gen-border);
+            background: var(--basket-akk-gen-bg);
+            color: var(--basket-akk-gen-border);
+        }
+
+        /* Visuelles Feedback */
+        .draggable.correct {
+            background-color: var(--success-color) !important;
+            border: 1px solid var(--success-color);
+        }
+
+        .draggable.incorrect {
+            background-color: var(--error-color) !important;
+            border: 1px solid var(--error-color);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px; /* Abstand zwischen den Buttons */
+            margin-top: 30px;
+            justify-content: center; /* Buttons zentrieren */
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .btn-reset {
+            background: #6c757d; /* Grau */
+            color: white;
+        }
+
+        .btn-solution {
+            background: #f39c12; /* Orange */
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Responsives Design */
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .basket-container { grid-template-columns: 1fr; } /* Untereinander auf kleineren Bildschirmen */
+            .basket { min-height: 180px; }
+            .draggable { font-size: 0.9rem; padding: 8px 12px; }
+            .item-pool { padding: 10px; gap: 8px; }
+            .controls { flex-direction: column; align-items: center; }
+            button { width: 100%; max-width: 250px; } /* Buttons strecken sich */
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.4em; }
+            .explanation { padding: 15px; }
+            .draggable { font-size: 0.85rem; padding: 7px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: Die Präposition ПО mit Zahlwörtern</h1>
+
+    <div class="explanation">
+        <h2>Grundlagen: Kategorisierung von ПО-Ausdrücken</h2>
+        <p>Die Präposition <strong>ПО</strong> wird im Russischen verwendet, um eine Verteilung auszudrücken, oft übersetzt mit „je“ oder „pro“. Der grammatische Fall des Zahlworts und des Substantivs hängt von der jeweiligen Zahl ab:</p>
+        <ul>
+            <li><strong>Dativ-Logik:</strong> Dies gilt für die Zahl <strong>1</strong> (один, одна, одно) und zusammengesetzte Zahlen, die auf <strong>1</strong> enden (z.B. 21, 31). Sowohl das Zahlwort als auch das Substantiv stehen hier im <strong>Dativ</strong>.</li>
+            <li><strong>Akkusativ/Genitiv-Logik:</strong> Dies gilt für die Zahlen <strong>2, 3, 4</strong> (Zahl im Akkusativ, Substantiv im Genitiv Singular) und für Zahlen von <strong>5 bis 20</strong> sowie runde Zehner (Zahl im Akkusativ, Substantiv im Genitiv Plural). Auch zusammengesetzte Zahlen, die auf <strong>2, 3, 4, 5-0</strong> enden, folgen dieser Logik.</li>
+        </ul>
+        <p><strong>Aufgabe:</strong> Ziehen Sie die russischen Ausdrücke in den Korb, der der korrekten grammatikalischen Logik entspricht. Grüner Hintergrund bedeutet richtig, roter Hintergrund bedeutet falsch.</p>
+    </div>
+
+    <div class="exercise-section">
+        <h2>Drag & Drop Kategorisierung</h2>
+        
+        <div class="item-pool" id="itemPool">
+            <!-- Die draggable Elemente werden hier automatisch von JavaScript zurückgesetzt -->
+            <div class="draggable" draggable="true" id="item1" data-category="dativ">по одному рублю</div>
+            <div class="draggable" draggable="true" id="item2" data-category="akk_gen">по два рубля</div>
+            <div class="draggable" draggable="true" id="item3" data-category="dativ">по одной конфете</div>
+            <div class="draggable" draggable="true" id="item4" data-category="akk_gen">по пять конфет</div>
+            <div class="draggable" draggable="true" id="item5" data-category="dativ">по двадцать одному дню</div>
+            <div class="draggable" draggable="true" id="item6" data-category="akk_gen">по три яблока</div>
+            <div class="draggable" draggable="true" id="item7" data-category="dativ">по одному окну</div>
+            <div class="draggable" draggable="true" id="item8" data-category="akk_gen">по десять евро</div>
+            <div class="draggable" draggable="true" id="item9" data-category="dativ">по одной газете</div>
+            <div class="draggable" draggable="true" id="item10" data-category="akk_gen">по четыре книги</div>
+            <div class="draggable" draggable="true" id="item11" data-category="dativ">по тридцати одному году</div>
+            <div class="draggable" draggable="true" id="item12" data-category="akk_gen">по двадцать пять долларов</div>
+            <div class="draggable" draggable="true" id="item13" data-category="akk_gen">по две чашки</div>
+            <div class="draggable" draggable="true" id="item14" data-category="dativ">по одному студенту</div>
+            <div class="draggable" draggable="true" id="item15" data-category="akk_gen">по двенадцать человек</div>
+            <div class="draggable" draggable="true" id="item16" data-category="akk_gen">по шесть столов</div>
+        </div>
+
+        <div class="basket-container">
+            <div class="basket dativ" id="basketDativ" ondrop="handleDrop(event)" ondragover="allowDrop(event)">
+                Dativ-Logik (Zahl 1 / Endung 1)
+            </div>
+            <div class="basket akk-gen" id="basketAkkGen" ondrop="handleDrop(event)" ondragover="allowDrop(event)">
+                Akkusativ/Genitiv-Logik (Zahl 2-4 / 5+)
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-reset" onclick="resetExercise()">Zurücksetzen</button>
+            <button class="btn-solution" onclick="showSolution()">Lösung anzeigen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let draggedItem = null;
+
+    // Ereignis-Listener für Drag-Start auf allen draggable Elementen
+    document.querySelectorAll('.draggable').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            draggedItem = e.target;
+            e.dataTransfer.setData('text/plain', e.target.id);
+            // Optional: Element während des Ziehens unsichtbar machen
+            setTimeout(() => e.target.style.display = 'none', 0);
+        });
+
+        // Event listener für Drag-End, um das Element wieder sichtbar zu machen
+        item.addEventListener('dragend', (e) => {
+            e.target.style.display = 'block';
+            draggedItem = null;
+        });
+    });
+
+    // Erlaubt das Ablegen in den Körben
+    function allowDrop(e) {
+        e.preventDefault();
+    }
+
+    // Behandelt das Ablegen eines Elements
+    function handleDrop(e) {
+        e.preventDefault();
+        const data = e.dataTransfer.getData('text/plain');
+        const droppedElement = document.getElementById(data);
+        const targetBasket = e.target.closest('.basket'); // Findet den Korb, auch wenn auf Kindelement dropped wird
+
+        if (droppedElement && targetBasket) {
+            targetBasket.appendChild(droppedElement);
+            checkItemPlacement(droppedElement, targetBasket);
+        } else if (droppedElement) {
+            // Wenn außerhalb eines Korbes abgelegt, zurück zum Pool
+            document.getElementById('itemPool').appendChild(droppedElement);
+            droppedElement.classList.remove('correct', 'incorrect');
+        }
+    }
+
+    // Überprüft, ob das Element im richtigen Korb abgelegt wurde
+    function checkItemPlacement(item, basket) {
+        const itemCategory = item.getAttribute('data-category');
+        const basketCategory = basket.id === 'basketDativ' ? 'dativ' : 'akk_gen';
+
+        if (itemCategory === basketCategory) {
+            item.classList.remove('incorrect');
+            item.classList.add('correct');
+        } else {
+            item.classList.remove('correct');
+            item.classList.add('incorrect');
+        }
+    }
+
+    // Setzt die Übung zurück: alle Elemente in den Pool, Farben entfernen
+    function resetExercise() {
+        const itemPool = document.getElementById('itemPool');
+        document.querySelectorAll('.draggable').forEach(item => {
+            itemPool.appendChild(item); // Verschiebt Element zurück in den Pool
+            item.classList.remove('correct', 'incorrect'); // Entfernt Feedback-Farben
+            item.style.display = 'block'; // Sicherstellen, dass es sichtbar ist
+        });
+    }
+
+    // Zeigt die korrekte Lösung an
+    function showSolution() {
+        document.querySelectorAll('.draggable').forEach(item => {
+            const itemCategory = item.getAttribute('data-category');
+            const targetBasket = itemCategory === 'dativ' ? document.getElementById('basketDativ') : document.getElementById('basketAkkGen');
+            
+            targetBasket.appendChild(item);
+            item.classList.remove('incorrect'); // Entfernt falsche Markierung
+            item.classList.add('correct');      // Fügt korrekte Markierung hinzu
+            item.style.display = 'block'; // Sicherstellen, dass es sichtbar ist
+        });
+    }
+</script>
+
+</body>
+</html>
