@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Fehler-Detektiv (12 Sätze)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --error-color: #e74c3c;
+            --success-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --highlight-hover: #fff3cd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        h1 {
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .explanation {
+            background: #eef7fd;
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .detective-area {
+            background: #fff;
+            border: 2px solid #ddd;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .sentence {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+        }
+
+        /* Die anklickbaren Phrasen */
+        .phrase {
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: inline-block;
+            border: 1px transparent solid;
+        }
+
+        .phrase:hover {
+            background-color: var(--highlight-hover);
+            border: 1px solid #ffeeba;
+        }
+
+        /* Fehler-Stil */
+        .phrase.is-error {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            text-decoration: line-through;
+            border: 1px solid var(--error-color);
+        }
+
+        /* Korrektur-Stil (Keine Kursivschrift) */
+        .correction {
+            color: var(--success-color);
+            font-weight: bold;
+            margin-left: 10px;
+            display: none;
+            font-style: normal; /* Explizit keine Kursivschrift */
+        }
+
+        .phrase.is-error + .correction {
+            display: inline;
+        }
+
+        /* Richtig-Stil (bei Klick auf korrekte Phrasen) */
+        .phrase.is-correct-feedback {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid var(--success-color);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-solution { background-color: #f39c12; color: white; }
+        button:hover { opacity: 0.9; }
+
+        .status-bar {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            min-height: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .sentence { font-size: 1rem; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Assistent: Fehler-Detektiv</h1>
+    
+    <div class="explanation">
+        <h2>Anleitung</h2>
+        <p>In den folgenden 12 Sätzen wird die Präposition <strong>ПО</strong> verwendet. Einige Sätze sind korrekt, in anderen haben sich Fehler versteckt.</p>
+        <ul>
+            <li>Klicke auf die russischen Ausdrücke.</li>
+            <li><strong>Falsche Formen</strong> werden rot markiert und die richtige Lösung erscheint daneben.</li>
+            <li><strong>Richtige Formen</strong> leuchten kurz grün auf.</li>
+        </ul>
+        <p><em>Finde alle 8 Fehler!</em></p>
+    </div>
+
+    <div class="detective-area">
+        <div class="sentence">1. Мама дала детям <span class="phrase" data-wrong="true">по пять конфеты</span><span class="correction">по пять конфет</span>.</div>
+        
+        <div class="sentence">2. Мы купили <span class="phrase" data-wrong="true">по двум билетам</span><span class="correction">по два билета</span> на футбол.</div>
+
+        <div class="sentence">3. Каждый студент получил <span class="phrase" data-wrong="false">по одному учебнику</span>.</div>
+
+        <div class="sentence">4. В каждой группе <span class="phrase" data-wrong="true">по двадцать один</span><span class="correction">по двадцать одному</span> студенту.</div>
+
+        <div class="sentence">5. Мы заказали в кафе <span class="phrase" data-wrong="true">по три яблок</span><span class="correction">по три яблока</span>.</div>
+
+        <div class="sentence">6. На праздник девочкам подарили <span class="phrase" data-wrong="true">по одну розе</span><span class="correction">по одной розе</span>.</div>
+
+        <div class="sentence">7. Туристы обменяли в банке <span class="phrase" data-wrong="true">по пятьдесят доллара</span><span class="correction">по fünfzig долларов</span>.</div>
+
+        <div class="sentence">8. Официант принёс нам <span class="phrase" data-wrong="false">по две чашки</span> чая.</div>
+
+        <div class="sentence">9. В каждом ряду стоит <span class="phrase" data-wrong="false">по четыре стола</span>.</div>
+
+        <div class="sentence">10. Ученики купили в магазине <span class="phrase" data-wrong="true">по восемь тетради</span><span class="correction">по восемь тетрадей</span>.</div>
+
+        <div class="sentence">11. Дети съели <span class="phrase" data-wrong="false">по одному яблоку</span>.</div>
+
+        <div class="sentence">12. Мы заплатили за обед <span class="phrase" data-wrong="true">по сто рубля</span><span class="correction">по сто рублей</span>.</div>
+    </div>
+
+    <div class="status-bar" id="status"></div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen</button>
+        <button class="btn-solution" onclick="showSolutions()">Fehler aufdecken</button>
+    </div>
+</div>
+
+<script>
+    const phrases = document.querySelectorAll('.phrase');
+    const statusDisplay = document.getElementById('status');
+    let errorsFound = 0;
+    const totalErrors = 8;
+
+    phrases.forEach(phrase => {
+        phrase.addEventListener('click', function() {
+            // Wenn bereits als Fehler markiert, nichts tun
+            if (this.classList.contains('is-error')) return;
+
+            const isWrong = this.getAttribute('data-wrong') === 'true';
+
+            if (isWrong) {
+                this.classList.add('is-error');
+                errorsFound++;
+                updateStatus();
+            } else {
+                // Korrekte Phrase angeklickt -> kurzes Feedback
+                this.classList.add('is-correct-feedback');
+                setTimeout(() => {
+                    this.classList.remove('is-correct-feedback');
+                }, 800);
+            }
+        });
+    });
+
+    function updateStatus() {
+        if (errorsFound === totalErrors) {
+            statusDisplay.textContent = "Super! Du hast alle 8 Fehler gefunden!";
+            statusDisplay.style.color = "var(--success-color)";
+        } else {
+            statusDisplay.textContent = `Fehler gefunden: ${errorsFound} von ${totalErrors}`;
+            statusDisplay.style.color = "var(--primary-color)";
+        }
+    }
+
+    function resetGame() {
+        phrases.forEach(p => {
+            p.classList.remove('is-error');
+            p.classList.remove('is-correct-feedback');
+        });
+        errorsFound = 0;
+        updateStatus();
+        statusDisplay.textContent = "";
+    }
+
+    function showSolutions() {
+        phrases.forEach(p => {
+            if (p.getAttribute('data-wrong') === 'true') {
+                p.classList.add('is-error');
+            }
+        });
+        errorsFound = totalErrors;
+        updateStatus();
+    }
+
+    // Initialisierung
+    updateStatus();
+</script>
+
+</body>
+</html>
