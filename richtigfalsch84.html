@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: Richtig oder Falsch? (ПО)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .explanation {
+            background: #eef7fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        /* Karten-Bereich */
+        .card-container {
+            position: relative;
+            height: 220px;
+            margin-bottom: 30px;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.4s, background-color 0.3s, opacity 0.3s;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card.correct-flash { background-color: #d4edda; border-color: var(--success-color); }
+        .card.error-flash { background-color: #f8d7da; border-color: var(--error-color); }
+
+        /* Fortschritt */
+        .progress-bar {
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: var(--secondary-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-true { background-color: var(--success-color); }
+        .btn-false { background-color: var(--error-color); }
+        .btn-action:active { transform: scale(0.95); }
+
+        .feedback-text {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+            font-size: 1rem;
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        /* Lösungstabelle */
+        .solution-list {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .solution-item {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        @media (max-width: 480px) {
+            .card { font-size: 1.1rem; }
+            h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Richtig oder Falsch?</h1>
+
+    <div id="game-screen">
+        <div class="explanation">
+            Entscheiden Sie, ob der Ausdruck grammatikalisch korrekt ist. Achten Sie auf die Präposition <strong>ПО</strong> und die Fallendungen.
+        </div>
+
+        <div class="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
+        <p id="counter">Frage 1 von 12</p>
+
+        <div class="card-container">
+            <div id="card" class="card">Lade...</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-action btn-false" onclick="handleGuess(false)">FALSCH</button>
+            <button class="btn-action btn-true" onclick="handleGuess(true)">RICHTIG</button>
+        </div>
+
+        <div id="feedback" class="feedback-text"></div>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2>Ergebnis</h2>
+        <p id="final-score"></p>
+        <div class="solution-list" id="solution-list"></div>
+        <button class="btn-reset" onclick="resetGame()">Neu starten</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { phrase: "по пять конфет", isCorrect: true, info: "Korrekt: 5 + Genitiv Plural." },
+        { phrase: "по пять конфеты", isCorrect: false, info: "Falsch: Bei 5 muss Genitiv Plural stehen (конфет)." },
+        { phrase: "по два билета", isCorrect: true, info: "Korrekt: 2 + Genitiv Singular." },
+        { phrase: "по одному билету", isCorrect: true, info: "Korrekt: 1 + Dativ." },
+        { phrase: "по три чашек", isCorrect: false, info: "Falsch: Bei 3 muss Genitiv Singular stehen (чашки)." },
+        { phrase: "по восемь тетрадей", isCorrect: true, info: "Korrekt: 8 + Genitiv Plural." },
+        { phrase: "по одну книгу", isCorrect: false, info: "Falsch: Bei 1 muss Dativ stehen (одной книге)." },
+        { phrase: "по двадцать одному рублю", isCorrect: true, info: "Korrekt: Zusammengesetzt auf 1 -> Dativ." },
+        { phrase: "по четыре яблока", isCorrect: true, info: "Korrekt: 4 + Genitiv Singular." },
+        { phrase: "по десять евро", isCorrect: true, info: "Korrekt: 10 + Genitiv Plural (unveränderlich)." },
+        { phrase: "по тридцати рублям", isCorrect: false, info: "Falsch: Akkusativ 30 (тридцать) + Genitiv Plural (рублей)." },
+        { phrase: "по одной розе", isCorrect: true, info: "Korrekt: 1 (weiblich) + Dativ." }
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let canClick = true;
+
+    function updateCard() {
+        const card = document.getElementById('card');
+        const counter = document.getElementById('counter');
+        const progress = document.getElementById('progress-fill');
+        
+        card.innerText = questions[currentIndex].phrase;
+        card.className = "card";
+        counter.innerText = `Frage ${currentIndex + 1} von ${questions.length}`;
+        progress.style.width = `${(currentIndex / questions.length) * 100}%`;
+        document.getElementById('feedback').innerText = "";
+        canClick = true;
+    }
+
+    function handleGuess(guess) {
+        if (!canClick) return;
+        canClick = false;
+
+        const card = document.getElementById('card');
+        const feedback = document.getElementById('feedback');
+        const isCorrect = questions[currentIndex].isCorrect;
+
+        if (guess === isCorrect) {
+            score++;
+            card.classList.add('correct-flash');
+            feedback.innerText = "Richtig!";
+            feedback.style.color = "var(--success-color)";
+        } else {
+            card.classList.add('error-flash');
+            feedback.innerText = "Falsch!";
+            feedback.style.color = "var(--error-color)";
+        }
+
+        setTimeout(() => {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                updateCard();
+            } else {
+                showResults();
+            }
+        }, 1200);
+    }
+
+    function showResults() {
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        document.getElementById('final-score').innerText = `Du hast ${score} von ${questions.length} Fragen richtig beantwortet.`;
+        
+        const list = document.getElementById('solution-list');
+        list.innerHTML = "<strong>Übersicht:</strong><br>";
+        questions.forEach(q => {
+            const item = document.createElement('div');
+            item.className = "solution-item";
+            item.innerHTML = `<strong>${q.phrase}</strong>: ${q.info}`;
+            list.appendChild(item);
+        });
+    }
+
+    function resetGame() {
+        currentIndex = 0;
+        score = 0;
+        document.getElementById('game-screen').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        updateCard();
+    }
+
+    // Start
+    updateCard();
+</script>
+
+</body>
+</html>
